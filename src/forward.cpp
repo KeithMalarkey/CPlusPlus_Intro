@@ -168,3 +168,5 @@ void demo_forward() {
     // auto x = NULL;
     // std::println("{}", x);
 }
+
+// todo std::forward_like std::as_const

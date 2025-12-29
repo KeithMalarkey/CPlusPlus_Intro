@@ -1,3 +1,4 @@
+#include "algo.hpp"
 #include "align.hpp"
 #include "cast.hpp"
 #include "class.hpp"
@@ -7,17 +8,27 @@
 #include "expression.hpp"
 #include "forward.hpp"
 #include "function.hpp"
+#include "iostring.hpp"
 #include "lambda.hpp"
+#include "macros.hpp"
 #include "memory_sector.hpp"
 #include "move.hpp"
+#include "new_del.hpp"
 #include "null_nullptr.hpp"
 #include "operator.hpp"
+#include "opt_expect_any_var.hpp"
 #include "pack.hpp"
 #include "queue.hpp"
 #include "ranges_views.hpp"
 #include "set.hpp"
 #include "smart.hpp"
+#include "stopSource.hpp"
+#include "template.hpp"
+#include "test.hpp"
+#include "threadDemo.hpp"
+#include "unionDemo.hpp"
 #include "vec.hpp"
+#include <print>
 
 // struct Entry {
 //     std::uint32_t id{};
@@ -31,24 +42,33 @@
 // };
 
 int main() {
-    // demo_forward();
-    // demo_null();
+    // new_del_demo();
+    // demo_align();
+    // demo_opt_expect_any_var();
     // demo_cast();
-    // demo_lambda();
-    // demo_pack();
+    // demo_decltype();
     // demo_expression();
-    // demo_operator();
-    // demo_move();
+    // demo_enum();
     // demo_exception();
-    // demo_vec();
-    // demo_memory_sector();
-    // demo_queue();
+    // demo_forward();
     // demo_function();
+    demo_iostr();
+    // demo_jthread();
+    // demo_lambda();
+    // demo_move();
+    // demo_memory_sector();
+    // demo_macros();
+    // demo_null();
+    // demo_operator();
+    // demo_pack();
+    // demo_queue();
     // demo_ranges_views();
     // demo_set();
-    demo_align();
-    // demo_enum();
-    // demo_decltype();
+    // demo_thread();
+    // demo_template();
+    // demo_union();
+    // demo_vec();
+    // test();
 
     // Entry item1{.id = 1, .desc = "An entry"};
     // order is that matters 顺序很重要

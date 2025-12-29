@@ -1,15 +1,35 @@
 #include "decl_type.hpp"
+#include <algorithm>
 #include <cstdint>
+#include <functional>
 #include <print>
 #include <ranges>
 #include <type_traits>
+#include <utility>
+#include <vector>
 
 /*
  * Content:
  * auto (decayed type) -> decltype -> decltype ([entity])
- * -> decltype([expression]) -> decltype(auto)
+ * -> decltype([expression]) -> decltype(auto) -> template
  * 前备知识： value category, move semantics
  */
+
+namespace declareAuto {
+// + 两个完美转发的形参F和Args,返回类型并不确定，适用decltype(auto)
+template <typename F, typename... Args>
+decltype(auto) Fuc(F &&func, Args &&...args) noexcept {
+    return std::forward<F>(func)(std::forward<Args>(args)...);
+}
+
+// F设计如下几个函数：add, max, sort
+double add(const double a, const double b) { return a + b; }
+
+auto max(const std::vector<int> &a) {
+    return *std::max_element(a.begin(), a.end());
+}
+
+} // namespace declareAuto
 
 struct A {
     std::int8_t num_{};
@@ -37,6 +57,7 @@ void demo_decltype() {
     auto str = "hello cpp";
     // * decltype()有两种用法,decltype([entity]) / decltype([expression])
     // * 一. 对于entity，相较于auto会保留const和reference, 不会发生类型退化
+    // * entity可以是objects, functions or functors, references and so on.
     decltype(a) ad{};   // int
     decltype(b) bd{};   // const int
     decltype(c) cd = a; // int &
@@ -56,6 +77,7 @@ void demo_decltype() {
     decltype(a) am{};     // am is int
     decltype((a)) bm{mn}; // bm is int &
 
+    // ---------------------------split--------------------
     auto lbd = [] { return 1; };
     decltype(lbd()) lx;
     auto lbd1 = [](int end) {
@@ -81,11 +103,26 @@ void demo_decltype() {
                  "category ? {}",
                  std::is_same_v<decltype(lbd2), decltype(lbd3)>); // false
 
-    // lambda是unique的，看到下面两个完全一样的lambda表达式decltype的类型返回值也不一样
+    // !lambda是unique的，看到下面两个完全一样的lambda表达式decltype的类型返回值也不一样
     auto fl = [i](int av, int bv) -> int { return av * bv + i; };
     auto hl = [i](int av, int bv) -> int { return av * bv + i; };
     static_assert(!std::is_same_v<decltype(fl), decltype(hl)>,
                   "The type of a lambda function is unique and unnamed");
+
+    // * 三、decltype(auto)可以直接代替decltype([entity])和decltype([expression])
+    decltype(auto) axv = a;
+    decltype(auto) ax = (a);
+    decltype(auto) bx = lbd;
+
+    // * 四、模板类推导，特别是完美转发的场景
+    // 这里采用一个function封装
+    std::function<double(const double, const double)> fc = &declareAuto::add;
+    // 指针表示
+    int (*pfunc)(const std::vector<int> &) = &declareAuto::max;
+    std::println("sum: {}", declareAuto::Fuc(fc, 3.2, 5.1));
+    std::println("sum: {}",
+                 declareAuto::Fuc(pfunc, std::vector<int>{1, -2, 7, 5, 11}));
+    // declareAuto::Fuc(F &&func, Args &&args...)
 }
 
 /* 什么是类型退化？

@@ -1,5 +1,4 @@
 #include "align.hpp"
-#include <cstdint>
 #include <print>
 
 void demo_align() {
@@ -10,11 +9,15 @@ void demo_align() {
     std::println("alignof(long long) = {}", alignof(long long));     // 8
     std::println("alignof(long double) = {}", alignof(long double)); // 16
 
+    struct Empty {
+    } em;
     struct Example {
         int b;
         char c;
         char16_t a;
     };
+    std::println("sizeof(em) and alignof(em) empty object: {} and {}",
+                 sizeof(Empty), alignof(Empty)); // 1 1
     std::println("alignof(Example) = {}, sizeof(Example) = {}",
                  alignof(Example), sizeof(Example)); // 4 8
     int a = 0;

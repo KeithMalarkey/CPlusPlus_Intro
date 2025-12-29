@@ -1,8 +1,11 @@
 #include "vec.hpp"
+#include "queue.hpp"
 #include <algorithm>
+#include <cstdint>
 #include <iostream>
 #include <iterator>
 #include <print>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -23,12 +26,83 @@ void custom_delimiter() {
               std::ostream_iterator<std::string>(std::cout, ""));
     std::cout << std::endl;
 }
+
+class Employee1 {
+    std::string name_{};
+    std::uint16_t ID_{};
+
+  public:
+    Employee1(const std::string &name, const std::uint16_t id)
+        : name_{name}, ID_{id} {
+        std::println("Common Constructor");
+    }
+    Employee1(Employee1 &other) noexcept : name_{other.name_}, ID_{other.ID_} {
+        std::println("Copy Constructor");
+    }
+
+    // Employee1(Employee1 &&other) noexcept
+    //     : name_{std::exchange(other.name_, {})},
+    //       ID_(std::exchange(other.ID_, {})) {}
+    // Employee1(Employee1 &&other) noexcept
+    //     : name_{std::move(other.name_)}, ID_{std::move(other.ID_)} {}
+    // + 基本数据类型拷贝的代价和移动几乎无差异。所以移动构造时，
+    // + 基础类型无所谓是拷贝构造还是移动构造
+    // * 考虑到移动操作实际上对原对象资源的窃取，所以是“不安全”操作，因此移动构造
+    // * 和赋值一般是nothrow的，即noexcept的，至少是条件noexcept(condition)
+    Employee1(Employee1 &&other) noexcept
+        : name_{std::move(other.name_)}, ID_{other.ID_} {
+        std::println("Move Constructor");
+    }
+
+    Employee1 &operator=(const Employee1 &other) {
+        if (this == &other)
+            return *this;
+        this->name_ = other.name_;
+        this->ID_ = other.ID_;
+        std::println("Copy Assignment");
+        return *this;
+    }
+
+    // !other是右值吗？
+    // !no,右值一般指的是临时值或xvalue(std::move)
+    // !它表示来自[caller]的一个右值，但是被调用者[callee]处(即此处)它实际上为左值
+    Employee1 &operator=(Employee1 &&other) noexcept {
+        if (this == &other)
+            return *this;
+        // name_ = std::exchange(other.name_, {}); or
+        name_ = std::move(other.name_);
+        // ID_ = std::exchange(other.ID_, {});
+        ID_ = other.ID_;
+        std::println("Move Assignment");
+        return *this;
+    }
+
+    void print() const { std::print("name: {}, id: {}\n", name_, ID_); }
+};
 } // namespace Vec
 
-// todo vector是线程不安全的
 void demo_vec() {
+    using namespace Vec;
     std::println("*********************** std::vector 示例 "
                  "*****************************");
+    // !我们来看看vector容器是如何存入元素并容器
+    std::println("[1]");
+    std::vector<Employee1> ve{};
+    // 预分配capacity=3
+    ve.reserve(3);
+    Employee1 ee{"Katrina", 27}; // common ctor
+    ve.emplace_back(ee);         // copy ctor
+    std::println("[2]");
+    ve.emplace_back("John", 30); // common + move ctor
+    std::println("[3]");
+    ve.push_back(Employee1{"Tom", 35}); // common + move ctor
+
+    std::println("List of elements in vector:");
+    // 若这里ele不是引用，这需要拷贝构造
+    for (const auto &ele : ve) {
+        ele.print();
+    }
+
     // method 1 列表初始化
     std::vector<int> v{7, 1, 2, 5, 10, 4, 5, 6};
 
@@ -149,6 +223,7 @@ void demo_vec() {
     std::println("Current max_size: {}", str.max_size());
     // * reserve为容器分配[预分配]指定大小的capacity;若小于现有capacity,则不会改变capacity
     // * 若大于现有capacity,则扩容capacity
+    // ! reserve一般在容器初期设置/预分配capacity
     str.reserve(12);
     std::println("5'th size of str: {} and capacity: {}", str.size(),
                  str.capacity());

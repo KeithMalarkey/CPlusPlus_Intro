@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <iostream>
 #include <print>
+#include <string>
 
 struct S {
     S() : m{42} {};
@@ -64,7 +65,7 @@ void check4prvalue() {
     // + 非引用类型的转换表达式， 比如static_cast<int>(x), (int)42,
     // + std::string{}
 
-    // * NTTP todo 在引入模板元编程之后介绍
+    // * NTTP（非类型模板形参） todo 在引入模板元编程之后介绍
     // * 三元表达式： a ? b : c;
     // * 如果b，c是不同类型或值分类，则三元表达式是纯右值，否则为左值
     int b = 7, c{};
@@ -97,6 +98,8 @@ void demo_expression() {
     S s{};
     std::println("s.m = {}", s.m);
     std::cout << (S{} = S{7}).m << '\n'; // 纯右值可以在左侧
+
+    decltype(auto) str = std::string{"sweetie!"}; // 事实上string literal为左值
 
     check4prvalue();
 }
